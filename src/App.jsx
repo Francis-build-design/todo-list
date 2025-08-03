@@ -12,6 +12,8 @@ function App(props) {
       name={task.name}
       id={task.id}
       completed={task.completed}
+      toggleTaskCompleted={toggleTaskCompleted}
+      deleteTask={deleteTask}
       key={task.id}
       /* Should always pass a unique key to anything you render with iteration.
          Nothing obvious will change in your browser, but if you do not use unique keys, 
@@ -20,9 +22,28 @@ function App(props) {
   ));
 
   function addTask(name) {
+    console.log(tasks[0]);
     const newTask = { name, id: `todo-${nanoid()}`, completed: false };
     setTasks([...tasks, newTask]);
   }
+
+  function toggleTaskCompleted(id) {
+    const updatedTasks = tasks.map((task) => {
+      if (id === task.id) {
+        return { ...task, completed: !task.completed };
+      }
+      return task;
+    });
+    setTasks(updatedTasks);
+  }
+
+  function deleteTask(id) {
+    const updatedTasks = tasks.filter((task) => id !== task.id);
+    setTasks(updatedTasks);
+  }
+
+  const tasksNoun = taskList.length !== 1 ? "tasks" : "task";
+  const headingText = `${taskList.length} ${tasksNoun} remaining`;
 
   return (
     <div className="todoapp stack-large">
@@ -33,7 +54,7 @@ function App(props) {
         <FilterButton name="Active" />
         <FilterButton name="Completed" />
       </div>
-      <h2 id="list-heading">3 tasks remaining</h2>
+      <h2 id="list-heading">{headingText}</h2>
       <ul
         role="list"
         className="todo-list stack-large stack-exception"
