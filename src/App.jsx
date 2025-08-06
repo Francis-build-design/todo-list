@@ -4,22 +4,40 @@ import Todo from "./components/Todo";
 import Form from "./components/Form";
 import FilterButton from "./components/FilterButton";
 
+const FILTER_MAP = {
+  All: () => true,
+  Active: (task) => !task.completed,
+  Completed: (task) => task.completed,
+};
+
+const FILTER_NAMES = Object.keys(FILTER_MAP);
+
 function App(props) {
   const [tasks, setTasks] = useState(props.tasks);
+  const [filter, setFilter] = useState("All");
 
-  const taskList = tasks?.map((task) => (
-    <Todo
-      name={task.name}
-      id={task.id}
-      completed={task.completed}
-      toggleTaskCompleted={toggleTaskCompleted}
-      deleteTask={deleteTask}
-      key={task.id}
-      /* Should always pass a unique key to anything you render with iteration.
-         Nothing obvious will change in your browser, but if you do not use unique keys, 
-         React will log warnings to your console and your app may behave strangely! */
+  const filterList = FILTER_NAMES.map((name) => (
+    <FilterButton
+      key={name}
+      name={name}
+      isPressed={name === filter}
+      setFilter={setFilter}
     />
   ));
+
+  const taskList = tasks
+    .filter(FILTER_MAP[filter])
+    .map((task) => (
+      <Todo
+        id={task.id}
+        name={task.name}
+        completed={task.completed}
+        key={task.id}
+        toggleTaskCompleted={toggleTaskCompleted}
+        deleteTask={deleteTask}
+        editTask={editTask}
+      />
+    ));
 
   function addTask(name) {
     console.log(tasks[0]);
@@ -37,6 +55,16 @@ function App(props) {
     setTasks(updatedTasks);
   }
 
+  function editTask(id, newName) {
+    const editedTaskList = tasks.map((task) => {
+      if (id === task.id) {
+        return { ...task, name: newName };
+      }
+      return task;
+    });
+    setTasks(editedTaskList);
+  }
+
   function deleteTask(id) {
     const updatedTasks = tasks.filter((task) => id !== task.id);
     setTasks(updatedTasks);
@@ -49,11 +77,7 @@ function App(props) {
     <div className="todoapp stack-large">
       <h1>TodoMatic</h1>
       <Form addTask={addTask} />
-      <div className="filters btn-group stack-exception">
-        <FilterButton name="All" />
-        <FilterButton name="Active" />
-        <FilterButton name="Completed" />
-      </div>
+      <div className="filters btn-group stack-exception">{filterList}</div>
       <h2 id="list-heading">{headingText}</h2>
       <ul
         role="list"
